@@ -7,7 +7,7 @@
 
 ---
 
-The PK, GS sampler [GS](https://github.com/ShengcaiLiao/QAConv) and our DFGS sampler: 
+The PK, [GS](https://github.com/ShengcaiLiao/QAConv) sampler and our DFGS sampler: 
 
 <img src="figures/f2.png" alt="figuresampler" style="zoom:10%;" />
 
