@@ -12,7 +12,7 @@ The PK, [GS](https://github.com/ShengcaiLiao/QAConv) sampler and our DFGS sample
 <img src="figures/f2.png" alt="figuresampler" style="zoom:10%;" />
 
 
-**Overall pipeline  **
+Overall pipeline:
 
 <img src="figures/f2c.png" alt="pipeline" style="zoom: 30%;" />
 
@@ -24,7 +24,7 @@ The PK, [GS](https://github.com/ShengcaiLiao/QAConv) sampler and our DFGS sample
 
 ---
 
-#### My code is based on [fast-reid](https://github.com/JDAI-CV/fast-reid) and [TransReid](https://github.com/damo-cv/TransReID).
+#### Our code is based on [fast-reid](https://github.com/JDAI-CV/fast-reid) and [TransReid](https://github.com/damo-cv/TransReID).
 
 Thanks for their contributions.
 
