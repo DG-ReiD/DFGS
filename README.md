@@ -3,9 +3,8 @@
 
 *We will release the full code in the future.*
 
-### Pipeline
+## Pipeline
 
----
 
 The PK, [GS](https://github.com/ShengcaiLiao/QAConv) sampler and our DFGS sampler: 
 
@@ -20,27 +19,19 @@ Overall pipeline:
 
 
 
-### Requirements
+## Requirements
 
----
-
-#### Our code is based on [fast-reid](https://github.com/JDAI-CV/fast-reid) and [TransReid](https://github.com/damo-cv/TransReID).
+### Our code is based on [fast-reid](https://github.com/JDAI-CV/fast-reid) and [TransReid](https://github.com/damo-cv/TransReID).
 
 Thanks for their contributions.
 
 -> If you are using the above-mentioned framework, you just need to place  our DFGS code in the sampler package and import it for use.
 
-
-
-#### Prepare DeiT or ViT Pre-trained Models.
+### Moreover, you need to prepare DeiT or ViT Pre-trained Models.
 
 
 
-### Code analysis
-
----
-
-#### 
+## Code analysis
 
 ```python
 class DepthFirstGraphSampler(Sampler):
