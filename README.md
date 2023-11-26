@@ -8,6 +8,7 @@
 
 
 
+
 ## Requirements
 
 ##### Our code is based on [fast-reid](https://github.com/JDAI-CV/fast-reid) and [TransReid](https://github.com/damo-cv/TransReID).
@@ -19,6 +20,7 @@ Thanks for their contributions.
 If you are using the above-mentioned framework, you just need to place  our DFGS code in the sampler package and import it for use.
 
 Moreover, You need to prepare DeiT or ViT Pre-trained Models.
+
 
 
 
