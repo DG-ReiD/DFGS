@@ -2,7 +2,7 @@
 
 ![sampling method](figures/f2.png)
 
-![pipeline](figures/f2c.png)
+![pipeline](figures/DFS.png)
 
 
 
@@ -27,8 +27,8 @@ Moreover, You need to prepare DeiT or ViT Pre-trained Models.
 ## Core Code
 
 ```python
-class DepthFirstGraphSampler(Sampler):
-    def __init__(self, data_source, batch_size, num_instances, domains, model, h_size=384, w_size=128, lamda=1.):
+class DepthFirstGraphSamplerText(Sampler):
+    def __init__(self, data_source, batch_size, num_instances, model,pid2label,h_size=224, w_size=224,epoch=60,start=0,log=None):
         super().__init__(data_source)
         self.data_source = data_source
         self.batch_size = batch_size
@@ -36,22 +36,23 @@ class DepthFirstGraphSampler(Sampler):
         self.model = model
         self.num_pids_per_batch = self.batch_size // self.num_instances
         self.index_dic = defaultdict(dict)
-        self.domain_info = {elm.lower(): 0 for elm in domains}
+        self.start = start
 
         for index, data in enumerate(self.data_source):
             if data[2] in self.index_dic[data[1]].keys():
                 self.index_dic[data[1]][data[2]].append(index)
             else:
                 self.index_dic[data[1]][data[2]] = [index]
-
-            self.domain_info[data[-1].lower()] += 1
         self.pids = list(self.index_dic.keys())
-
+        self.pidlabel = torch.tensor([pid2label[pid] for pid in self.pids])
         self.length = 0
+        self.log = log
+        self.get_feat = True
+        self.dist_mat = None
+
         for pid in self.pids:
             num = sum([len(self.index_dic[pid][key]) for key in self.index_dic[pid].keys()])
             self.length += num
-        self.lamda = lamda
 
         self.eval_transforms = T.Compose([
             T.Resize((h_size, w_size)),
@@ -70,7 +71,7 @@ class DepthFirstGraphSampler(Sampler):
         batch_idxs_dict = defaultdict(list)
         pids = copy.deepcopy(self.pids)
         random.shuffle(pids)
-        print("Graph Structure Updating...")
+        self.log.info("Graph Structure Updating...")
         for pid in pids:
             dic_tmp = copy.deepcopy(self.index_dic[pid])
             cids = list(dic_tmp.keys())
@@ -102,47 +103,47 @@ class DepthFirstGraphSampler(Sampler):
         final_idxs = []
 
         model = copy.deepcopy(self.model).cuda().eval()
-        index_dic = defaultdict(list)
-        for index, data in enumerate(self.data_source):
-            index_dic[data[1]].append(index)
-        pids = list(index_dic.keys())
-        inex_dic = {k: index_dic[k][random.randint(0, len(index_dic[k]) - 1)] for k in pids}
-        feat_dist = {}
-        choice_set = CommDataset([self.data_source[i] for i in list(inex_dic.values())], self.eval_transforms,
-                                 relabel=False)
-        choice_loader = DataLoader(
-            choice_set, batch_size=128, shuffle=False, num_workers=8,
-            collate_fn=val_collate_fn
-        )
+        # index_dic = defaultdict(list)
+        # for index, data in enumerate(self.data_source):
+        #     index_dic[data[1]].append(index)
+        # pids = list(index_dic.keys())
 
+        i_ter = len(pids) // self.batch_size
         feats = torch.tensor([]).cuda()
-        scores = torch.tensor([]).cuda()
-        for i, (img, pid, domain) in enumerate(choice_loader):
-            with torch.no_grad():
-                img = img.cuda()
-                ### If you only have 'feat', please remove 'score' ###
-                feat, score = model(img, domain)
-                feats = torch.cat((feats, feat), dim=0)
-                scores = torch.cat((scores, score), dim=0)
+        if self.get_feat:
+            self.get_feat = False
+            for i in range(i_ter):
+                if i+1 != i_ter:
+                    target_label = self.pidlabel[i * self.batch_size:(i + 1) * self.batch_size]
+                else:
+                    target_label = self.pidlabel[i * self.batch_size:len(pids)]
+                with torch.no_grad():
+                    feat = model(label=target_label, get_text=True, domain=None, cam_label=None, getdomain=False,getcls=False)
+                    feats = torch.cat((feats, feat), dim=0)
+            dist_mat = euclidean_dist(feats, feats)
+            for i in range(len(dist_mat)):
+                dist_mat[i][i] = float("inf")
 
-        dist_f = euclidean_dist(feats, feats)
-        ### If you only have 'feat', please remove 'score' ###
-        dist_s = euclidean_dist(scores, scores)
-        dist_mat = dist_f + dist_s
+            self.dist_mat = dist_mat
 
-        for i in range(len(dist_mat)):
-            dist_mat[i][i] = float("inf")
+        graph = {}
+        range_arr = [i for i in range(self.start,self.start+10)]
 
-        for i, feat in enumerate(dist_mat):
-            feat_dist[pids[i]] = []
+        for i, feat in enumerate(self.dist_mat):
+            graph[pids[i]] = []
             loc = torch.argsort(feat)
-            for j in range(4, 14):
+            random.shuffle(range_arr)
+            for j in range_arr:
                 locj = int(loc[j].cpu())
-                feat_dist[pids[i]].append(pids[locj])
-        print("Graph Structure Update Completed!")
-        print("Building Iteration...")
+                graph[pids[i]].append(pids[locj])
+        self.log.info("Graph Structure Update Completed!")
+
+
+
+        self.log.info("Building Iteration...")
         batch_idxs = []
         is_pid = set()
+
         stack = deque([random.choice(list(avai_pids))])
         i = len(avai_pids)
         while stack and i:
@@ -166,15 +167,14 @@ class DepthFirstGraphSampler(Sampler):
                 final_idxs.extend(batch_idxs)
                 batch_idxs = []
                 is_pid = set()
-            # At the completion of a batch, start a new round.
-            avai_k = list(feat_dist[k])
+            # At `the completion of a batch, start a new round.
+            avai_k = list(graph[k])
             # Depth-first
             for v in avai_k[::-1]:
                 if v in avai_pids:
                     stack.append(v)
         torch.cuda.empty_cache()
-        print("Completion of Iteration!")
-        print(len(final_idxs))
+        self.log.info("Completion of Iteration!"+' '+str(len(final_idxs)))
         self.length = len(final_idxs)
         return iter(final_idxs)
 
