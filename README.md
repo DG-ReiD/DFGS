@@ -1,4 +1,4 @@
-## Enhancing Robustness of ViT in Cross-domain Person Retrieval: A Domain Guided Framework via Depth First Graph Sampling
+## Hard Sample Mining Based on Language Information from Vision-Language Model
 
 ![sampling method](figures/f2.png)
 
