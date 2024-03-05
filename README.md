@@ -1,6 +1,5 @@
 ## Hard Sample Mining Based on Language Information from Vision-Language Model
 
-![sampling method](figures/f2.png)
 
 ![pipeline](figures/DFS.png)
 
