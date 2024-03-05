@@ -11,7 +11,7 @@
 
 ## Requirements
 
-##### Our code is based on [fast-reid](https://github.com/JDAI-CV/fast-reid) and [TransReid](https://github.com/damo-cv/TransReID).
+##### Our code is based on [fast-reid](https://github.com/JDAI-CV/fast-reid), [TransReid](https://github.com/damo-cv/TransReID) and [CLIP-ReID](https://github.com/Syliz517/CLIP-ReID).
 
 Thanks for their contributions.
 
@@ -19,7 +19,6 @@ Thanks for their contributions.
 
 If you are using the above-mentioned framework, you just need to place  our DFGS code in the sampler package and import it for use.
 
-Moreover, You need to prepare DeiT or ViT Pre-trained Models.
 
 
 
@@ -191,4 +190,4 @@ class DepthFirstGraphSamplerText(Sampler):
 
 Our method has achieved excellent results.
 
-![experiment](figures/experiment.png)
+![experiment](figures/experiments.png)
