@@ -1,4 +1,4 @@
-## Hard Sample Mining Based on Language Information from Vision-Language Model
+## CLIP-DFGS: A Hard Sample Mining Method for CLIP in Generalizable Person Re-Identification
 
 
 ![pipeline](figures/DFS.png)
@@ -189,4 +189,4 @@ class DepthFirstGraphSamplerText(Sampler):
 
 Our method has achieved excellent results.
 
-![experiment](figures/experiments.png)
+
